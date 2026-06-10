@@ -1,6 +1,7 @@
 const params = new URLSearchParams(location.search);
 const type = params.get("type") || "all";
 const QUESTION_LIMIT = 50;
+const AUTO_NEXT_DELAY = 1200; // 正誤表示後、1.2秒で次の問題へ自動移動
 
 const quizInfo = {
   sasSpecialist: {
@@ -92,6 +93,7 @@ questions = shuffle(uniqueQuestions(questions)).slice(0, QUESTION_LIMIT);
 let currentIndex = 0;
 let score = 0;
 let answered = false;
+let autoNextTimer = null;
 
 const counter = document.getElementById("counter");
 const scoreEl = document.getElementById("score");
@@ -103,6 +105,7 @@ const progressBar = document.getElementById("progressBar");
 
 function showQuestion() {
   answered = false;
+  clearTimeout(autoNextTimer);
   resultEl.textContent = "";
   nextBtn.style.display = "none";
 
@@ -155,7 +158,11 @@ function showQuestion() {
 
       if (q.explanation) resultEl.textContent += ` ${q.explanation}`;
       scoreEl.textContent = `スコア: ${score}`;
-      nextBtn.style.display = "block";
+
+      autoNextTimer = setTimeout(() => {
+        currentIndex++;
+        showQuestion();
+      }, AUTO_NEXT_DELAY);
     };
     choicesEl.appendChild(btn);
   });
